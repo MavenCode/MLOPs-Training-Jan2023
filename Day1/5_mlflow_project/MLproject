@@ -1,0 +1,20 @@
+name: my-project
+
+conda_env: environment.yaml
+pip_requirments: requirments.txt
+
+entry_points:
+  main:
+    parameters:
+      model_path: {type: str, default: "model"}
+      learning_rate: {type: float, default: 0.001}
+      epochs: {type: int, default: 100}
+    command: |
+          python3 ./train.py \
+            --model_path={model_path} \
+            --learning_rate={learning_rate} \
+            --epochs={epochs} \
+  evaluate: 
+    parameters: 
+      model_path: {type: str, default: "/model"}
+    command: python3 evaluate.py --model-path={model_path}
