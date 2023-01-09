@@ -10,8 +10,8 @@ endif
 
 .PHONY: docker-login
 docker-login:
-	aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 000654207548.dkr.ecr.us-west-2.amazonaws.com
-
+	aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/c8r6f6w7
+	
 .PHONY: skaffold-build-local
 skaffold-build-local:
 	skaffold build  --platform linux/amd64 --default-repo=$(SKAFFOLD_DEFAULT_REPO)
