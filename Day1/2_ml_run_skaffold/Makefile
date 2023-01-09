@@ -14,9 +14,10 @@ docker-login:
 
 .PHONY: skaffold-build-local
 skaffold-build-local:
-	skaffold build  --platform linux/amd64 --default-repo=$(SKAFFOLD_DEFAULT_REPO)
+	skaffold build  --platform linux/amd64 --default-repo=$(SKAFFOLD_DEFAULT_REPO) --tag charles-latest
 
 .PHONY: skaffold-build
 skaffold-build:
-	skaffold build  --platform linux/amd64 --default-repo=$(SKAFFOLD_DEFAULT_REPO) --push
+	skaffold build  --platform linux/amd64 --default-repo=$(SKAFFOLD_DEFAULT_REPO) --push --tag charles-latest
+
 
