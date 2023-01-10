@@ -15,7 +15,7 @@ def preprocess():
     from sklearn.preprocessing import StandardScaler 
     
     #importing the data
-    data = pd.read_csv("https://raw.githubusercontent.com/MavenCode/MLOpsTraining-Dec2022/master/data/telco/churn_modeling.csv")
+    data = pd.read_csv("https://raw.githubusercontent.com/MavenCode/MLOPs-Training-Jan2023/main/data/telco/churn_modeling.csv")
     
     #dropping some columns that are not needed
     data = data.drop(columns=['RowNumber','CustomerId','Surname'], axis=1)
