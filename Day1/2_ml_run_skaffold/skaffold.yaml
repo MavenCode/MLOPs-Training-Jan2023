@@ -7,7 +7,7 @@ build:
     sha256: {}
   # defines where to find the code at build time and where to push the resulting image
   artifacts:
-  - image: demo1
+  - image: ml_app
     context: components/ml_app
     docker:
       dockerfile: Dockerfile

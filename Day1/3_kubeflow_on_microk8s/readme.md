@@ -16,7 +16,7 @@ sudo snap install juju --classic
 ```
 juju bootstrap microk8s
 ```
-
+  
 ### Add controller Juju Controller
 ```
 juju add-model kubeflow
@@ -70,6 +70,6 @@ juju config dex-auth static-password=admin
 
 ## Kubeflow Dashboard
 
-Once kubeflow is installed and configured, you can access the `Kubeflow Dashboard` by navigating to [localhost:8080](https://localhost:8080). 
+Once kubeflow is installed and configured, you can access the `Kubeflow Dashboard` by navigating to [http://10.64.140.43.nip.io](http://10.64.140.43.nip.io). 
 use "admin" as the username and password to log into the Dashboard
 

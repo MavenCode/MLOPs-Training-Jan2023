@@ -1,3 +1,2 @@
 kfp==1.8.16
-scikit-learn==0.22
-pandas==0.23.4
+pandas
