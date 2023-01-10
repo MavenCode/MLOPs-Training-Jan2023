@@ -9,7 +9,7 @@ def download_dataset(
     
     import pandas as pd
     
-    url="https://github.com/MavenCode/MLOPs-Training-Jan2023/blob/main/data/hr/salary.csv"
+    url="https://raw.githubusercontent.com/MavenCode/MLOPs-Training-Jan2023/main/data/hr/salary.csv"
     
     df_all_data = pd.read_csv(url)
     print(df_all_data)
