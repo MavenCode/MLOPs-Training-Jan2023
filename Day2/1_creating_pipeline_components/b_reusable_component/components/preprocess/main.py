@@ -6,7 +6,7 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler 
 
-DATA_PATH="https://raw.githubusercontent.com/MavenCode/MLOpsTraining-Dec2022/master/data/telco/churn_modeling.csv"
+DATA_PATH="https://raw.githubusercontent.com/MavenCode/MLOPs-Training-Jan2023/main/data/telco/churn_modeling.csv"
 
 def preprocess():
     #importing the data
