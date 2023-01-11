@@ -1,4 +1,4 @@
-### Loading component from yaml exampl
+### Loading component from yaml example
 
 #### This example demonstrats the loading of kubeflow pipeline components from files.
 

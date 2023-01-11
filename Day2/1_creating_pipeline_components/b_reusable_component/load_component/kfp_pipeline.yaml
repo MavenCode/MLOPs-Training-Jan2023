@@ -1,0 +1,64 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: basic-pipeline-
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.18, pipelines.kubeflow.org/pipeline_compilation_time: '2023-01-10T23:26:36.535005',
+    pipelines.kubeflow.org/pipeline_spec: '{"description": "Basic pipeline", "name":
+      "Basic pipeline"}'}
+  labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.18}
+spec:
+  entrypoint: basic-pipeline
+  templates:
+  - name: basic-pipeline
+    dag:
+      tasks:
+      - {name: preprocess-op, template: preprocess-op}
+  - name: preprocess-op
+    container:
+      args: []
+      command:
+      - sh
+      - -c
+      - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
+        'kfp' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
+        'kfp' --user) && "$0" "$@"
+      - sh
+      - -ec
+      - |
+        program_path=$(mktemp)
+        printf "%s" "$0" > "$program_path"
+        python3 -u "$program_path" "$@"
+      - "def preprocess_op():\n    from kfp import dsl\n    return dsl.ContainerOp(\n\
+        \        name = 'Preprocess Data',\n        # docker image\n        image\
+        \ = 'public.ecr.aws/c8r6f6w7/preprocess:charles-latest',\n        arguments\
+        \ = [],\n        # component outputs\n        file_outputs={\n           \
+        \ 'X_train': '/preprocess_data/X_train.npy',\n            'X_test': '/preprocess_data/X_test.npy',\n\
+        \            'y_train': '/preprocess_data/y_train.npy',\n            'y_test':\
+        \ '/preprocess_data/y_test.npy'     \n        }\n    )\n\nimport argparse\n\
+        _parser = argparse.ArgumentParser(prog='Preprocess op', description='')\n\
+        _parsed_args = vars(_parser.parse_args())\n\n_outputs = preprocess_op(**_parsed_args)\n"
+      image: python:3.10
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.18
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+      annotations: {pipelines.kubeflow.org/component_spec: '{"implementation": {"container":
+          {"args": [], "command": ["sh", "-c", "(PIP_DISABLE_PIP_VERSION_CHECK=1 python3
+          -m pip install --quiet --no-warn-script-location ''kfp'' || PIP_DISABLE_PIP_VERSION_CHECK=1
+          python3 -m pip install --quiet --no-warn-script-location ''kfp'' --user)
+          && \"$0\" \"$@\"", "sh", "-ec", "program_path=$(mktemp)\nprintf \"%s\" \"$0\"
+          > \"$program_path\"\npython3 -u \"$program_path\" \"$@\"\n", "def preprocess_op():\n    from
+          kfp import dsl\n    return dsl.ContainerOp(\n        name = ''Preprocess
+          Data'',\n        # docker image\n        image = ''public.ecr.aws/c8r6f6w7/preprocess:charles-latest'',\n        arguments
+          = [],\n        # component outputs\n        file_outputs={\n            ''X_train'':
+          ''/preprocess_data/X_train.npy'',\n            ''X_test'': ''/preprocess_data/X_test.npy'',\n            ''y_train'':
+          ''/preprocess_data/y_train.npy'',\n            ''y_test'': ''/preprocess_data/y_test.npy''     \n        }\n    )\n\nimport
+          argparse\n_parser = argparse.ArgumentParser(prog=''Preprocess op'', description='''')\n_parsed_args
+          = vars(_parser.parse_args())\n\n_outputs = preprocess_op(**_parsed_args)\n"],
+          "image": "python:3.10"}}, "name": "Preprocess op"}', pipelines.kubeflow.org/component_ref: '{"digest":
+          "46e4697429276c14ff55529309409a158d3b6d98c6faa71e54e9c18bbb2c6eac", "url":
+          "preprocess-reusable.yaml"}'}
+  arguments:
+    parameters: []
+  serviceAccountName: pipeline-runner

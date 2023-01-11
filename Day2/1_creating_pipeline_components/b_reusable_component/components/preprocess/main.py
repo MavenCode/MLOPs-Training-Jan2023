@@ -1,21 +1,16 @@
+import joblib
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler 
 
-# Building a Reusable component from a python script
-# a. Write your python function in a .py script
-# b. Build and push your docker image
-# c. Build a resuable component with your image and script
+DATA_PATH="https://raw.githubusercontent.com/MavenCode/MLOpsTraining-Dec2022/master/data/telco/churn_modeling.csv"
 
 def preprocess():
-    #importing libraries
-    import joblib
-    import pandas as pd
-    import numpy as np
-    from sklearn.preprocessing import LabelEncoder
-    from sklearn.preprocessing import OneHotEncoder
-    from sklearn.model_selection import train_test_split
-    from sklearn.preprocessing import StandardScaler 
-    
     #importing the data
-    data = pd.read_csv("https://raw.githubusercontent.com/MavenCode/MLOPs-Training-Jan2023/main/data/telco/churn_modeling.csv")
+    data = pd.read_csv(DATA_PATH)
     
     #dropping some columns that are not needed
     data = data.drop(columns=['RowNumber','CustomerId','Surname'], axis=1)
