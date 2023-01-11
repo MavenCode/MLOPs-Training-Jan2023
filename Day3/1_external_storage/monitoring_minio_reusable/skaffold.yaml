@@ -1,0 +1,58 @@
+apiVersion: skaffold/v2beta29
+kind: Config
+metadata: 
+  name: skaffold-deployment
+build:
+  tagPolicy:
+    sha256: {}
+  # defines where to find the code at build time and where to push the resulting image
+  artifacts:
+  - image: datadownloader
+    context: components/datadownloader
+    docker:
+      dockerfile: Dockerfile
+    sync:
+      infer:
+      - '**/*'
+  - image: export_models
+    context: components/export_models
+    docker:
+      dockerfile: Dockerfile
+    sync:
+      infer:
+      - '**/*'
+  - image: pca_analysis
+    context: components/pca_analysis
+    docker:
+      dockerfile: Dockerfile
+    sync:
+      infer:
+      - '**/*'
+  - image: preprocess_dataset
+    context: components/preprocess_dataset
+    docker:
+      dockerfile: Dockerfile
+    sync:
+      infer:
+      - '**/*'
+  - image: print_results
+    context: components/print_results
+    docker:
+      dockerfile: Dockerfile
+    sync:
+      infer:
+      - '**/*'
+  - image: test_model
+    context: components/test_model
+    docker:
+      dockerfile: Dockerfile
+    sync:
+      infer:
+      - '**/*'
+  - image: train_model
+    context: components/train_model
+    docker:
+      dockerfile: Dockerfile
+    sync:
+      infer:
+      - '**/*'
