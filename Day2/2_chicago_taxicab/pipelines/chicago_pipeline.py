@@ -1,7 +1,7 @@
 import kfp
 from kfp import components
 
-COMPONENT_URL = 'https://raw.githubusercontent.com/MavenCode/MLOpsTraining-Jan2023/main/Day2/4_chicago_taxicab/components'
+COMPONENT_URL = 'https://raw.githubusercontent.com/MavenCode/MLOPs-Training-Jan2023/main/Day2/2_chicago_taxicab/components'
 
 chicago_taxi_dataset_op = components.load_component_from_url(f'{COMPONENT_URL}/Chicago_Taxi_Trips/component.yaml')
 pandas_transform_csv_op = components.load_component_from_url(f'{COMPONENT_URL}/Transform_DataFrame/component.yaml')
