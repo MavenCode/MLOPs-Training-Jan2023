@@ -2,11 +2,10 @@
 
 ## Prerequisites
 
-1. install requirements.txt
-2. configure minio client -> `wget https://dl.min.io/client/mc/release/linux-amd64/mc && chmod +x mc`
-3. validate minio client is working `./mc --help`
-4. connect to minio server -> `mc alias set minio http://minio-service.kubeflow:9000 minio minio123`
-5. validate needed data is available -> 
+1. configure minio client -> `wget https://dl.min.io/client/mc/release/linux-amd64/mc && chmod +x mc`
+2. validate minio client is working `./mc --help`
+3. connect to minio server -> `mc alias set minio http://minio-service.kubeflow:9000 minio minio123`
+4. validate needed data is available -> 
 
 ## How to Implement Kubeflow Pipelines Components
 In this pipeline, we have the following components:

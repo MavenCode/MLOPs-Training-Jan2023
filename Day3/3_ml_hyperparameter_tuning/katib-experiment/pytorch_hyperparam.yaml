@@ -1,12 +1,4 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: admin
-  labels:
-    katib.kubeflow.org/metrics-collector-injection: enabled
-
 ---    
-
 apiVersion: "kubeflow.org/v1beta1"
 kind: Experiment
 metadata:
