@@ -73,10 +73,10 @@ def chicago_taxi_pipeline():
 
 
 if __name__ == '__main__':
-    kfp.compiler.Compiler().compile(chicago_taxi_pipeline, "chicago_pipeline-2.zip")
-    client = kfp.Client(host='pipelines-api.kubeflow.svc.cluster.local:8888')
+    kfp.compiler.Compiler().compile(chicago_taxi_pipeline, "chicago_pipeline.zip")
+    #client = kfp.Client(host='pipelines-api.kubeflow.svc.cluster.local:8888')
     # client.list_pipelines()
-    pipeline_info = client.upload_pipeline('chicago_pipeline-2.zip', pipeline_name='chicago_pipeline-2')
+    # pipeline_info = client.upload_pipeline('chicago_pipeline-2.zip', pipeline_name='chicago_pipeline-2')
 
     # my_experiment = client.create_experiment(name='chicago_pipeline-2-experiments')
     # my_run = client.run_pipeline(my_experiment.id, 'my-chicago-taxi-run', 'chicago_pipeline-2.zip')
