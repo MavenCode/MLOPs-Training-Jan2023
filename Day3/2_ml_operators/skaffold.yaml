@@ -1,0 +1,23 @@
+apiVersion: skaffold/v2beta29
+kind: Config
+metadata: 
+  name: skaffold-deployment
+build:
+  tagPolicy:
+    sha256: {}
+  # defines where to find the code at build time and where to push the resulting image
+  artifacts:
+  - image: model_train
+    context: model-training
+    docker:
+      dockerfile: Dockerfile
+    sync:
+      infer:
+      - '**/*'
+  - image: torch_job
+    context: pytorch-operator-job
+    docker:
+      dockerfile: Dockerfile
+    sync:
+      infer:
+      - '**/*'
