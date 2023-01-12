@@ -1,0 +1,19 @@
+name: mnist
+channels:
+  - conda
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+      - mlflow
+      - torchvision>=0.9.1
+      - torch>=1.9.0
+      - pytorch-lightning==1.7.6
+      - protobuf<4.0.0
+variables:
+  MLFLOW_EXPERIMENT: Mnist_classification_Experiment
+  MODEL_NAME: mnist-model
+  AWS_ACCESS_KEY_ID: 
+  AWS_SECRET_ACCESS_KEY: 
+  MLFLOW_S3_ENDPOINT_URL: http://minio.cloudtraining-mavencode.com:9000
+  MLFLOW_TRACKING_URI: http://mlflow.cloudtraining-mavencode.com:5000

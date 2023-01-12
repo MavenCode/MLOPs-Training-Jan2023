@@ -1,0 +1,22 @@
+name: mnist
+
+conda_env: conda.yaml
+
+entry_points:
+  main:
+    parameters:
+      max_epoch: {type: int, default: 1}
+      learning_rate: {type: float, default: 0.001}
+      accelerator: {type: str, default: "cpu"}
+      devices: {type: int, default: 1}
+      num_nodes: {type: int, default: 1}
+
+
+    command: |
+          python3 main.py \
+            --max_epochs {max_epoch} \
+            --learning_rate {learning_rate} \
+            --accelerator {accelerator} \
+            --devices {devices} \
+            --num_nodes {num_nodes} \
+
