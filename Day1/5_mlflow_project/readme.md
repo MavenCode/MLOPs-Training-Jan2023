@@ -31,7 +31,7 @@ This will run the project with the default parameters. You can see the default v
 In order to run the file with custom parameters, run the command
 
 ```
-mlflow run . -P max_epochs=X
+mlflow run . -P epochs=X
 ```
 
 where `X` is your desired value for `max_epochs`.
