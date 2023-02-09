@@ -2,6 +2,7 @@ import kfp
 from kfp import dsl
 
 CONTAINER_REGISTRY="<Todo_Insert_container_registry_here>"
+CONTAINER_TAG="latest"
 MINIO_SERVER='minio.cloudtraining-mavencode.com:9000'
 MINIO_ACCESS_KEY='some_access_key'
 MINIO_SECRET_KEY='some_secret_key'
@@ -9,7 +10,7 @@ MINIO_SECRET_KEY='some_secret_key'
 def datadownload_op(minio_server, data_dir):
     return dsl.ContainerOp(
         name='Data Download',
-        image=f'{CONTAINER_REGISTRY}/datadownloader:latest',
+        image=f'{CONTAINER_REGISTRY}/datadownloader:{CONTAINER_TAG}',
         arguments=[
             '--minio_server', minio_server,
             '--data_dir', data_dir
@@ -20,7 +21,7 @@ def datadownload_op(minio_server, data_dir):
 def data_preprocess_op(data_dir, clean_data_dir):
     return dsl.ContainerOp(
         name='Data Preprocessing',
-        image=f'{CONTAINER_REGISTRY}/preprocess_dataset:latest',
+        image=f'{CONTAINER_REGISTRY}/preprocess_dataset:{CONTAINER_TAG}',
         arguments=[
             '--data_dir', data_dir,
             '--clean_data_dir', clean_data_dir
@@ -31,7 +32,7 @@ def data_preprocess_op(data_dir, clean_data_dir):
 def pca_analysis_op(clean_data_dir, pca_dir):
     return dsl.ContainerOp(
         name='PCA Analysis',
-        image=f'{CONTAINER_REGISTRY}/pca_analysis:latest',
+        image=f'{CONTAINER_REGISTRY}/pca_analysis:{CONTAINER_TAG}',
         arguments=[
             '--clean_data_dir', clean_data_dir,
             '--pca_dir', pca_dir
@@ -42,7 +43,7 @@ def pca_analysis_op(clean_data_dir, pca_dir):
 def train_op(clean_data_dir, model_dir):
     return dsl.ContainerOp(
         name='Model Training',
-        image=f'{CONTAINER_REGISTRY}/train_model:latest',
+        image=f'{CONTAINER_REGISTRY}/train_model:{CONTAINER_TAG}',
         arguments=[
             '--clean_data_dir', clean_data_dir,
             '--model_dir', model_dir
@@ -53,7 +54,7 @@ def train_op(clean_data_dir, model_dir):
 def model_test_op(clean_data_dir, model_dir, metrics_path):
     return dsl.ContainerOp(
         name='Model Testing',
-        image=f'{CONTAINER_REGISTRY}/test_model:latest',
+        image=f'{CONTAINER_REGISTRY}/test_model:{CONTAINER_TAG}',
         arguments=[
             '--clean_data_dir', clean_data_dir,
             '--model_dir', model_dir,
@@ -67,7 +68,7 @@ def model_export_op(model_dir, metrics_path, export_bucket, model_name, model_ve
                     minio_access_key, minio_secret_key):
     return dsl.ContainerOp(
         name='Model Export',
-        image=f'{CONTAINER_REGISTRY}/export_models:latest',
+        image=f'{CONTAINER_REGISTRY}/export_models:{CONTAINER_TAG}',
         arguments=[
             '--model_dir', model_dir,
             '--metrics_path', metrics_path,
@@ -84,7 +85,7 @@ def model_export_op(model_dir, metrics_path, export_bucket, model_name, model_ve
 def print_results_op(pca_dir, metrics_path):
     return dsl.ContainerOp(
         name='Result Printing',
-        image=f'{CONTAINER_REGISTRY}/print_results:latest',
+        image=f'{CONTAINER_REGISTRY}/print_results:{CONTAINER_TAG}',
         arguments=[
             '--pca_dir', pca_dir,
             '--metrics_path', metrics_path
