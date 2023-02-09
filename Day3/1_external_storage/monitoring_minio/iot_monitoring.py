@@ -41,20 +41,20 @@ def op_transformer(op):
 
 
 @dsl.pipeline(
-    name="End-to-End Industrial IoT Pipeline",
+    name="iot monitoring Pipeline",
     description="A sample pipeline to demonstrate multi-step model training, evaluation and export",
 )
 def monitoring_pipeline(
+    minio_access_key: str,
+    minio_secret_key: str,
     export_bucket: str = "monitoring",
     model_name: str = "monitoring",
     model_version: int = 1,
+    minio_server: str = "http://minio.cloudtraining-mavencode.com:9000",
 ):
-    MINIO_SERVER='minio.cloudtraining-mavencode.com:9000'
-    MINIO_ACCESS_KEY=''
-    MINIO_SECRET_KEY=''
 
-    pvc_op = dsl.VolumeOp(name='Persistent Volume Claim', 
-            resource_name='data-volume',
+    pvc_op = dsl.VolumeOp(name='pvc', 
+            resource_name='iot-pvc',
             size='1Gi',
             modes=dsl.VOLUME_MODE_RWO)
 
@@ -63,12 +63,12 @@ def monitoring_pipeline(
         export_bucket=export_bucket,
         model_name=model_name,
         model_version=model_version,
-        minio_server=MINIO_SERVER,
-        minio_access_key=MINIO_ACCESS_KEY,
-        minio_secret_key=MINIO_SECRET_KEY,
+        minio_server=minio_server,
+        minio_access_key=minio_access_key,
+        minio_secret_key=minio_secret_key,
     )
     
     dsl.get_pipeline_conf().add_op_transformer(op_transformer)
 
 if __name__ == '__main__':
-    kfp.compiler.Compiler().compile(monitoring_pipeline, "monitoringpipeline.yaml")
+    kfp.compiler.Compiler().compile(monitoring_pipeline, "iotpipeline.yaml")

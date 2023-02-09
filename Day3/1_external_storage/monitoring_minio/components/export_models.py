@@ -15,12 +15,12 @@ def export_model(
 
     s3 = boto3.client(
         "s3",
-        endpoint_url=f'http://{minio_server}',
+        endpoint_url=minio_server,
         aws_access_key_id=minio_access_key,
         aws_secret_access_key=minio_secret_key,
         config=Config(signature_version="s3v4"),
     )
-
+    
     # Create export bucket if it does not yet exist
     response = s3.list_buckets()
     export_bucket_exists = False

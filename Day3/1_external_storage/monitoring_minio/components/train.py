@@ -5,17 +5,21 @@ def train(clean_data_dir: str) -> str:
     subprocess.run([sys.executable, '-m', 'pip', 'install', 'tensorflow'])
     subprocess.run([sys.executable, '-m', 'pip', 'install', 'keras'])
     subprocess.run([sys.executable, '-m', 'pip', 'install', 'joblib'])
-    import pandas as pd
-    import pickle
+  
     import os
-    import joblib
+    import json
+    import pickle
+    import logging
+    from datetime import datetime
+  
+    import boto3
     import numpy as np
     import tensorflow as tf
-    from keras.layers import Input, Dropout
-    from keras.layers.core import Dense 
-    from keras.models import Model, Sequential, load_model
     from keras import regularizers
-    import logging
+    from botocore.client import Config
+    from collections import namedtuple    
+    from keras.layers.core import Dense 
+    from keras.models import Sequential
 
     with open(os.path.join(clean_data_dir,'clean_data.pickle'), 'rb') as f:
         data = pickle.load(f)
@@ -47,11 +51,16 @@ def train(clean_data_dir: str) -> str:
     NUM_EPOCHS=5
     BATCH_SIZE=10
 
+    log_dir = "pvc_data/tensorboard/logs/fit/" + datetime.now().strftime("%Y%m%d-%H%M%S")
+
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+
     model.fit(np.array(X_train),np.array(X_train),
                     batch_size=BATCH_SIZE, 
                     epochs=NUM_EPOCHS,
                     validation_split=0.1,
-                    verbose = 1)
+                    verbose = 1, 
+                    callbacks = [tensorboard_callback])
 
     model_dir = "pvc_data/models"
 
@@ -62,3 +71,4 @@ def train(clean_data_dir: str) -> str:
     logging.info(os.listdir(model_dir))
 
     return model_dir
+    

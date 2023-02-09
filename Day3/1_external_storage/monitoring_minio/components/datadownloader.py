@@ -10,7 +10,7 @@ def download_dataset(minio_server: str) -> str:
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
-    url = f'http://{minio_server}/monitoring/datasets.tar.gz'
+    url = f'{minio_server}/monitoring/datasets.tar.gz'
     logging.info(url)
     stream = urllib.request.urlopen(url)
     logging.info('done downloading')
