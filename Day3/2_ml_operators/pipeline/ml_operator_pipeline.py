@@ -7,7 +7,7 @@ CONTAINER_TAG="charles-v1.0.0"
 def ml_operator_op():
     return dsl.ContainerOp(
         name='Pytorch Operator',
-        image=f'{CONTAINER_REGISTRY}/torch_job:latest',
+        image=f'{CONTAINER_REGISTRY}/torch_job:{CONTAINER_TAG}',
         arguments=[],
         command=["python3", "pytorch_job.py"]
     )
