@@ -3,6 +3,7 @@ import uuid
 from kubernetes import client, config
 
 CONTAINER_REGISTRY="<Todo_Insert_container_registry_here>"
+CONTAINER_TAG="charles-v1.0.0"
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("__Pytorch Distributed Model Training__")
@@ -31,7 +32,7 @@ def torch_manifest():
                  "containers": [
                     {
                         "name": "pytorch",
-                        "image": f"{CONTAINER_REGISTRY}/model_train:latest",
+                        "image": f"{CONTAINER_REGISTRY}/model_train:{CONTAINER_TAG}",
                         "command": [
                         "python3",
                         "model_train.py",
@@ -56,7 +57,7 @@ def torch_manifest():
                   "containers": [
                      {
                         "name": "pytorch",
-                        "image": f"{CONTAINER_REGISTRY}/model_train:latest",
+                        "image": f"{CONTAINER_REGISTRY}/model_train:{CONTAINER_TAG}",
                         "command": [
                         "python3",
                         "model_train.py",
