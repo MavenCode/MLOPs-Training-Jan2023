@@ -2,6 +2,7 @@ import kfp
 from kfp import dsl
 
 CONTAINER_REGISTRY="TODO_insert_a_registry_name_here"
+CONTAINER_TAG="charles-v1.0.0"
 
 def ml_operator_op():
     return dsl.ContainerOp(
