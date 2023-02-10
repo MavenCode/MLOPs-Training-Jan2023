@@ -1,0 +1,7 @@
+datasets
+torch
+transformers
+evaluate
+torchvision
+accelerate
+cloudpickle

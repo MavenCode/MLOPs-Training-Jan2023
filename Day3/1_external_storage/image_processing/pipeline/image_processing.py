@@ -44,10 +44,10 @@ def op_transformer(op):
     return op
 
 @dsl.pipeline(
-   name='End-to-End Industrial IoT Pipeline',
-   description='A sample pipeline to demonstrate multi-step model training, evaluation and export'
+   name='End-to-End image_processing pipeline',
+   description='A sample pipeline to demonstrate multi-class image classification'
 )
-def monitoring_pipeline(
+def image_processing_pipeline(
     batch_size: int = 64,
     data_dir: str = "/train",
     clean_data_dir: str = "/train/data",
@@ -71,5 +71,5 @@ def monitoring_pipeline(
 
 
 if __name__ == '__main__':
-    kfp.compiler.Compiler().compile(monitoring_pipeline, 'huggingface_pipeline.yaml')
+    kfp.compiler.Compiler().compile(image_processing_pipeline, 'image_processing_pipeline.yaml')
     # client = kfp.Client(host='pipelines-api.kubeflow.svc.cluster.local:8888')

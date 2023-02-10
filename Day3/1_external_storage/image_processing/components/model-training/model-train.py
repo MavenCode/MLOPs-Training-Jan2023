@@ -1,22 +1,19 @@
-import argparse
-import cloudpickle
-import os
+import math 
+from accelerate import Accelerator
 import evaluate
-import torch
-from torch.utils.data import DataLoader
-import numpy as np
+import os
+import pickle
+import os
+import cloudpickle
 import argparse
 import logging
-from accelerate import Accelerator
-from transformers import (
-    MODEL_FOR_IMAGE_CLASSIFICATION_MAPPING,
-    AutoConfig,
-    AutoImageProcessor,
-    AutoModelForImageClassification,
-    HfArgumentParser,
-    Trainer,
-    TrainingArguments
-)
+from datasets import load_dataset
+from torch.utils.data import DataLoader
+from transformers import AutoImageProcessor
+import torch
+from torchvision.transforms import CenterCrop, Compose, Normalize, RandomHorizontalFlip, \
+    RandomResizedCrop, Resize, ToTensor
+from transformers import AutoConfig, AutoImageProcessor, AutoModelForImageClassification, SchedulerType, get_scheduler
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("__Model Training Logger__")
@@ -26,78 +23,98 @@ if __name__ == "__main__":
 
     def model_args():
         parser = argparse.ArgumentParser(description='Model training arguments')
-        parser.add_argument('--model_name', type=str, default='google/vit-base-patch16-224-in21k',
-                            help='Path to pretrained model or model identifier from huggingface.co/models')
-        parser.add_argument('--model_revision', type=str, default='main',
-                            help='The specific model version to use (can be a branch name, tag name or commit id).')
-        parser.add_argument('--ignore_mismatched_sizes', type=bool, default=False,
-                            help='Will enable to load a pretrained model whose head dimensions are different.')
         parser.add_argument('--clean_data_dir', type=str, help="clean data directory", required=True,)
-        parser.add_argument("--output_dir", type=str, default=None, help="Where to store the final model.")
         parser.add_argument("--gradient_accumulation_steps", type=int, default=1, 
-                            help="Number of updates steps to accumulate before performing a backward/update pass.")
-        parser.add_argument("--weight_decay", type=float, default=0.0, help="Weight decay to use.")
-        parser.add_argument("--epochs", type=int, default=5, help="Total number of training epochs to perform.")
+                                help="Number of updates steps to accumulate before performing a backward/update pass.")
+        parser.add_argument("--num_train_epochs", type=int, default=5, help="Total number of training epochs to perform.")
         parser.add_argument("--learning_rate", type=float, default=5e-5, help="Initial learning rate (after the potential warmup period) to use.")
-        parser.add_argument("--batch_size", type=int, default=64, help="Batch size (per device) for the training dataloader.")
-
         args = parser.parse_args()
         
         return args
 
     args = model_args()
 
-    def collate_fn(examples):
-        pixel_values = torch.stack([example["pixel_values"] for example in examples])
-        labels = torch.tensor([example["labels"] for example in examples])
-        return {"pixel_values": pixel_values, "labels": labels}
+    overrode_max_train_steps = False
+    max_train_steps = None
+    num_train_epochs = args.num_train_epochs
+    num_warmup_steps = 0
+    lr_scheduler_type = "linear"
+    checkpointing_steps = None
+    per_device_train_batch_size = 8
 
-    def load_train_data(args):
-        # Load train data
-        with open(os.path.join(args.clean_data_dir, "train_data.pkl"), "rb") as train_file:
-            train_data = cloudpickle.load(train_file)
+    with open(os.path.join(args.clean_data_dir, "model.pkl"), "rb") as f:
+        model = cloudpickle.load(f)
+    with open(os.path.join(args.clean_data_dir, "train_data.pkl"), "rb") as f:
+        train_dataloader = cloudpickle.load(f)
+    with open(os.path.join(args.clean_data_dir, "val_data.pkl"), "rb") as f:
+        eval_dataloader = cloudpickle.load(f)
 
-        return train_data
-
-    def load_val_data(args):
-        # Load validation data
-        with open(os.path.join(args.clean_data_dir, "val_data.pkl"), "rb") as val_file:
-            val_data = cloudpickle.load(val_file)
-        
-        return val_data
-
-    train_dataset = load_train_data(args)
-    eval_dataset = load_val_data(args)
-
-    train_dataloader = DataLoader(
-        train_dataset, shuffle=True, collate_fn=collate_fn, batch_size=args.batch_size)
+    no_decay = ["bias", "LayerNorm.weight"]
+    optimizer_grouped_parameters = [
     
-    eval_dataloader = DataLoader(eval_dataset, collate_fn=collate_fn, batch_size=args.batch_size)
-
-    model = AutoModelForImageClassification.from_pretrained(
-            args.model_name,
-            from_tf=bool(".ckpt" in args.model_name),
-            revision=args.model_revision,
-            ignore_mismatched_sizes=args.ignore_mismatched_sizes
-        )
-
-    criterion = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
-
+        {
+            "params": [p for n, p in model.named_parameters() if not any(nd in n for nd in no_decay)],
+            "weight_decay": 0.0,
+        },
+        {
+            "params": [p for n, p in model.named_parameters() if any(nd in n for nd in no_decay)],
+            "weight_decay": 0.0,
+        },
+    ]
+    optimizer = torch.optim.AdamW(optimizer_grouped_parameters, lr=args.learning_rate)
+    accelerator = Accelerator(gradient_accumulation_steps=args.gradient_accumulation_steps)
+    num_update_steps_per_epoch = math.ceil(len(train_dataloader) / args.gradient_accumulation_steps)
+    if max_train_steps is None:
+        max_train_steps = num_train_epochs * num_update_steps_per_epoch
+        overrode_max_train_steps = True
+    lr_scheduler = get_scheduler(
+        name=lr_scheduler_type,
+        optimizer=optimizer,
+        num_warmup_steps=num_warmup_steps * args.gradient_accumulation_steps,
+        num_training_steps=max_train_steps * args.gradient_accumulation_steps,
+    )
+    # Prepare everything with our `accelerator`.
+    model, optimizer, train_dataloader, eval_dataloader, lr_scheduler = accelerator.prepare(
+        model, optimizer, train_dataloader, eval_dataloader, lr_scheduler
+    )
+    # We need to recalculate our total training steps as the size of the training dataloader may have changed.
+    num_update_steps_per_epoch = math.ceil(len(train_dataloader) / args.gradient_accumulation_steps)
+    if overrode_max_train_steps:
+        max_train_steps = num_train_epochs * num_update_steps_per_epoch
+    # Afterwards we recalculate our number of training epochs
+    num_train_epochs = math.ceil(max_train_steps / num_update_steps_per_epoch)
+    # Get the metric function
+    metric = evaluate.load("accuracy")
+    # Train!
+    # Only show the progress bar once on each machine.
+    completed_steps = 0
     starting_epoch = 0
-
-    for epoch in range(starting_epoch, args.epochs):
-        running_loss = 0.0
-        for i, data in enumerate(train_dataloader):
-            inputs, labels = data
-            optimizer.zero_grad()
-            outputs = model(inputs)
-            loss = criterion(outputs, labels)
+    for epoch in range(starting_epoch, num_train_epochs):
+        model.train()
+        for step, batch in enumerate(train_dataloader):
+            outputs = model(**batch)
+            loss = outputs.loss
             loss.backward()
             optimizer.step()
-
-            running_loss += loss.item()
-        logger.info(f'Epoch [{epoch + 1}/{args.epochs}], Loss: {running_loss / len(train_dataloader)}')
-
-    # Save the model
-    torch.save(model.state_dict(), "model.pth")
+            lr_scheduler.step()
+            optimizer.zero_grad()
+            if isinstance(checkpointing_steps, int):
+                if completed_steps % checkpointing_steps == 0:
+                    output_dir = f"step_{completed_steps }"
+                    
+            if completed_steps >= max_train_steps:
+                break
+            logger.info(f"epoch: {epoch} | step: {step} | loss {loss}")
+        model.eval()
+        for step, batch in enumerate(eval_dataloader):
+            with torch.no_grad():
+                outputs = model(**batch)
+            predictions = outputs.logits.argmax(dim=-1)
+            predictions, references = accelerator.gather_for_metrics((predictions, batch["labels"]))
+            
+            metric.add_batch(
+                predictions=predictions,
+                references=references,
+            )
+        eval_metric = metric.compute()["accuracy"]
+        logger.info(f"epoch: {epoch} | accuracy: {eval_metric} ")

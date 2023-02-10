@@ -1,5 +1,5 @@
 import os
-import pickle
+import cloudpickle
 import argparse
 import logging
 from datasets import load_dataset
@@ -8,6 +8,7 @@ from transformers import AutoImageProcessor
 import torch
 from torchvision.transforms import CenterCrop, Compose, Normalize, RandomHorizontalFlip, \
     RandomResizedCrop, Resize, ToTensor
+from transformers import AutoConfig, AutoImageProcessor, AutoModelForImageClassification
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("__Data Preprocessing Logger__")
@@ -25,7 +26,7 @@ if __name__ == "__main__":
     )
     
     parser.add_argument(
-        "--args.clean_data_dir",
+        "--clean_data_dir",
         type=str,
         help="clean data directory",
     )
@@ -53,6 +54,25 @@ if __name__ == "__main__":
     pretrained_model = "google/vit-base-patch16-224-in21k"
 
     image_processor = AutoImageProcessor.from_pretrained(pretrained_model)
+  
+    labels = dataset["train"].features["labels"].names
+    label2id = {label: str(i) for i, label in enumerate(labels)}
+    id2label = {str(i): label for i, label in enumerate(labels)}
+
+    config = AutoConfig.from_pretrained(
+        pretrained_model,
+        num_labels=len(labels),
+        i2label=id2label,
+        label2id=label2id,
+        finetuning_task="image-classification",
+    )
+  
+    model = AutoModelForImageClassification.from_pretrained(
+        pretrained_model,
+        from_tf=bool(".ckpt" in pretrained_model),
+        config=config,
+        ignore_mismatched_sizes=pretrained_model,
+    )
 
     if "shortest_edge" in image_processor.size:
         size = image_processor.size["shortest_edge"]
@@ -85,7 +105,10 @@ if __name__ == "__main__":
         """Apply _val_transforms across a batch."""
         example_batch["pixel_values"] = [val_transforms(image.convert("RGB")) for image in example_batch["image"]]
         return example_batch
-
+    
+    dataset["train"] = dataset["train"].shuffle(seed=12).select(range(10))
+    dataset["validation"] = dataset["validation"].shuffle(seed=12).select(range(10))
+    
     # # Set the training transforms
     train_dataset = dataset["train"].with_transform(preprocess_train)
 
@@ -106,7 +129,10 @@ if __name__ == "__main__":
         os.mkdir(args.clean_data_dir)
 
     with open(os.path.join(args.clean_data_dir, "train_data.pkl"), "wb") as f:
-        pickle.dump(train_dataloader, f)
+        cloudpickle.dump(train_dataloader, f)
     
     with open(os.path.join(args.clean_data_dir, "val_data.pkl"), "wb") as f:
-        pickle.dump(eval_dataloader, f)
+        cloudpickle.dump(eval_dataloader, f)
+      
+    with open(os.path.join(args.clean_data_dir, "model.pkl"), "wb") as f:
+        cloudpickle.dump(model, f)
